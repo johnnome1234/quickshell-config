@@ -47,3 +47,4 @@ auto_dismiss = 5000
 
 [reminders]
 file = "reminders.json"
+
