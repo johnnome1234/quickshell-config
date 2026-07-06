@@ -7,6 +7,7 @@ import Quickshell.Services.Mpris
 import Quickshell.Services.Pipewire
 import Quickshell.Services.Notifications
 import Quickshell.Widgets
+import Quickshell.Bluetooth
 
 PanelWindow {
     id: window
@@ -20,7 +21,7 @@ PanelWindow {
     color: "transparent"
     WlrLayershell.keyboardFocus: ((editorOpen && popupOpen) || window.selectedSsid !== "" || launcherOpen) ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
-    // sleep detection automatically restarts quickshell on wake
+    // handle wake up
     Timer {
         interval: 1000
         running: true
@@ -29,7 +30,7 @@ PanelWindow {
         onTriggered: {
             var now = new Date().getTime();
             if (now - lastTick > 4000) {
-                // time jumped by four seconds likely woke up from sleep
+                // check time jump
                 Qt.quit();
             }
             lastTick = now;
@@ -224,8 +225,8 @@ PanelWindow {
             if (!iconString && notif.appName) {
                 iconString = notif.appName.toLowerCase().replace(/ /g, "-");
             }
-            if (iconString && !iconString.startsWith("file:// ") && !iconstring.startswith(" ") && !iconstring.startswith("image: ") && !iconstring.startswith("http")) {
-                iconString = "image:// icon " + iconstring;
+            if (iconString && !iconString.startsWith("file://") && !iconString.startsWith(" ") && !iconString.startsWith("image:") && !iconString.startsWith("http")) {
+                iconString = "image://icon/" + iconString;
             }
 
             var newNotif = {
@@ -280,7 +281,7 @@ PanelWindow {
     }
 
     onIsCalendarHoveredChanged: {
-        // hover auto open disabled
+        // hover disabled
     }
 
     Timer {
@@ -294,7 +295,7 @@ PanelWindow {
 
     FileView {
         id: remindersFile
-        path: Qt.resolvedUrl("reminders.json").toString().replace("file:// ", "")
+        path: Qt.resolvedUrl("reminders.json").toString().replace("file://", "")
         
         onTextChanged: {
             try {
@@ -416,7 +417,7 @@ PanelWindow {
 
     Process {
         id: audioSinkProcess
-        command: ["python3", Qt.resolvedUrl("get_sinks.py").toString().replace("file:// ", "")]
+        command: ["python3", Qt.resolvedUrl("get_sinks.py").toString().replace("file://", "")]
         running: true
         stdout: SplitParser {
             onRead: data => {
@@ -474,7 +475,7 @@ PanelWindow {
         }
     }
 
-    // update media position every second during playback
+    // update media pos
     Timer {
         id: mediaPositionTimer
         interval: 1000
@@ -718,18 +719,31 @@ PanelWindow {
         }
         
         function connectDevice(mac) {
-            command = ["bash", "-c", "bluetoothctl pair " + mac + " && bluetoothctl trust " + mac + " && bluetoothctl connect " + mac];
-            running = true;
+            for (let i = 0; i < Bluetooth.devices.values.length; i++) {
+                if (Bluetooth.devices.values[i].address === mac) {
+                    Bluetooth.devices.values[i].pair();
+                    Bluetooth.devices.values[i].connect();
+                    return;
+                }
+            }
         }
         
         function disconnectDevice(mac) {
-            command = ["bluetoothctl", "disconnect", mac];
-            running = true;
+            for (let i = 0; i < Bluetooth.devices.values.length; i++) {
+                if (Bluetooth.devices.values[i].address === mac) {
+                    Bluetooth.devices.values[i].disconnect();
+                    return;
+                }
+            }
         }
 
         function removeDevice(mac) {
-            command = ["bluetoothctl", "remove", mac];
-            running = true;
+            for (let i = 0; i < Bluetooth.devices.values.length; i++) {
+                if (Bluetooth.devices.values[i].address === mac) {
+                    Bluetooth.devices.values[i].forget();
+                    return;
+                }
+            }
         }
         
         function scanDevices() {
@@ -1035,7 +1049,7 @@ PanelWindow {
                     visible: status === Image.Ready
                 }
 
-                // fallback icon when no art
+                // fallback icon
                 Text {
                     anchors.centerIn: parent
                     text: "music_note"
@@ -1046,7 +1060,7 @@ PanelWindow {
                 }
             }
 
-            // track title full no elide initially
+            // full track title
             Text {
                 id: popupTrackTitle
                 anchors.left: albumArtContainer.right
@@ -1356,7 +1370,7 @@ PanelWindow {
             anchors.centerIn: parent
             width: 20
             height: 20
-            source: "file:///home/johnnome1234/.gemini/antigravity-cli/brain/804a6ef7-4668-47f5-87ab-cfb1b789d690/coke_bottle_icon_1783299243485.jpg"
+            source: Qt.resolvedUrl("assets/coke_bottle_icon.jpg")
             fillMode: Image.PreserveAspectFit
             opacity: activeReminderCount > 0 ? 1.0 : 0.6
         }
@@ -1517,7 +1531,7 @@ PanelWindow {
         Behavior on implicitHeight { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
         
         anchor.rect.x: Math.min(window.width - width - 10, wifiContainer.x + wifiContainer.width / 2 - width / 2)
-        anchor.rect.y: 45 // offset below bar
+        anchor.rect.y: 45 // offset
         
         visible: wifiPopupOpen || wifiContainerRect.opacity > 0.01
         color: "transparent"
@@ -2862,7 +2876,7 @@ PanelWindow {
                     
                     Image {
                         anchors.centerIn: parent
-                        source: (currentSystemNotification && currentSystemNotification.icon !== "") ? (currentSystemNotification.icon.startsWith("image:// icon ") ? currentsystemnotification.icon : "image: icon " + currentsystemnotification.icon) + "?fallback dialog information" : quickshell.iconpath("preferences system notifications", "dialog information")
+                        source: (currentSystemNotification && currentSystemNotification.icon !== "") ? (currentSystemNotification.icon.startsWith("image://icon/") ? currentSystemNotification.icon : "image://icon/" + currentSystemNotification.icon) + "?fallback=dialog-information" : Quickshell.iconPath("preferences-system-notifications", "dialog-information")
                         sourceSize.width: (currentSystemNotification && currentSystemNotification.icon !== "") ? 36 : 20
                         sourceSize.height: (currentSystemNotification && currentSystemNotification.icon !== "") ? 36 : 20
                         fillMode: Image.PreserveAspectFit
@@ -3098,7 +3112,7 @@ PanelWindow {
                                         Image {
                                             anchors.centerIn: parent
                                             property string iconSrc: modelData.appIcon ? modelData.appIcon : (modelData.image ? modelData.image : "")
-                                            source: iconSrc ? (iconSrc.startsWith("image:// icon ") ? iconsrc : "image: icon " + iconsrc) + "?fallback dialog information" : quickshell.iconpath("preferences system notifications", "dialog information")
+                                            source: iconSrc ? (iconSrc.startsWith("image://icon/") ? iconSrc : "image://icon/" + iconSrc) + "?fallback=dialog-information" : Quickshell.iconPath("preferences-system-notifications", "dialog-information")
                                             sourceSize.width: iconSrc ? 24 : 14
                                             sourceSize.height: iconSrc ? 24 : 14
                                             fillMode: Image.PreserveAspectFit

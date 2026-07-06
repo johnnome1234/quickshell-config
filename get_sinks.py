@@ -15,12 +15,13 @@ while True:
                 in_sinks_section = False
                 continue
             
-            if in_sinks_section and '.' in line and '[vol:' in line:
-                parts = line.split('.')
+            if in_sinks_section and '.' in line:
+                parts = line.split('.', 1)
                 id_str = ''.join(c for c in parts[0] if c.isdigit())
-                name_part = parts[1].split('[')[0].strip().lower()
-                is_active = '*' in parts[0]
-                sinks.append({'id': id_str, 'name': name_part, 'active': is_active})
+                if id_str:
+                    name_part = parts[1].split('[')[0].strip().lower()
+                    is_active = '*' in parts[0]
+                    sinks.append({'id': id_str, 'name': name_part, 'active': is_active})
         
         print(json.dumps(sinks), flush=True)
     except Exception as e:

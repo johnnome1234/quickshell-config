@@ -29,7 +29,7 @@ Item {
             // skip comments and empty lines
             if (line.length === 0 || line.startsWith("#")) continue;
 
-            // match section header e.g., [theme.colors]
+            // match section header
             var sectionMatch = line.match(/^\[(.*)\]$/);
             if (sectionMatch) {
                 currentSectionPath = sectionMatch[1];
@@ -45,18 +45,18 @@ Item {
                 continue;
             }
 
-            // match key value e.g., background " e6dcce"
+            // match key value
             var kvMatch = line.match(/^([a-zA-Z0-9_-]+)\s*=\s*(.*)$/);
             if (kvMatch) {
                 var key = kvMatch[1].trim();
                 var valStr = kvMatch[2].trim();
-                // strip inline comments
+                // strip comments
                 if (valStr.indexOf("#") !== -1 && !valStr.startsWith("\"")) {
                     var quoteIndex = valStr.indexOf("\"");
                     if (quoteIndex === -1) {
                          valStr = valStr.substring(0, valStr.indexOf("#")).trim();
                     } else {
-                        // handle quotes if needed, simplified for now
+                        // handle quotes
                         var lastQuote = valStr.lastIndexOf("\"");
                         if (valStr.indexOf("#", lastQuote) !== -1) {
                             valStr = valStr.substring(0, valStr.indexOf("#", lastQuote)).trim();

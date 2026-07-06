@@ -7,10 +7,10 @@ Singleton {
 
     SystemClock {
         id: systemClock
-        precision: SystemClock.Minutes // optimize updates to once per minute
+        precision: SystemClock.Minutes // optimize updates
     }
 
-    // expose the date object globally
+    // expose date globally
     readonly property var date: systemClock.date
 }
 
