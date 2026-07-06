@@ -120,3 +120,4 @@ Item {
     readonly property bool animationEnabled: _get("shell.animation.enabled", true)
     readonly property real animationSpeed: _get("shell.animation.speed", 1.0)
 }
+
