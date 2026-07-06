@@ -13,3 +13,4 @@ Singleton {
     // expose the date object globally
     readonly property var date: systemClock.date
 }
+
