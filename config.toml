@@ -1,0 +1,49 @@
+# quickshell configuration
+# modeled after noctalia's toml format
+
+[shell]
+ui_scale = 1.0
+corner_radius = 16
+font_family = "sans-serif"
+time_format = "hh:mm AP"
+date_format = "MMMM yyyy"
+exclusive_zone = 45
+bar_height = 70
+
+[shell.animation]
+enabled = true
+speed = 1.0
+
+[shell.panel]
+launcher_placement = "centered"
+
+[theme]
+mode = "light"
+
+[theme.colors]
+background = "#e6dcce"
+background_dark = "#2d2722"
+border = "#cbbda8"
+accent = "#a05e26"
+text_primary = "#2d2722"
+text_secondary = "#8a7e72"
+text_on_dark = "#f5e0c3"
+surface = "#d4c4b0"
+hover = "#24000000"
+hover_light = "#12000000"
+error = "#c04040"
+active_accent = "#e0af68"
+notification_badge = "#d04040"
+
+[widgets.weather]
+latitude = 37.3394
+longitude = -121.895
+temperature_unit = "fahrenheit"
+update_interval = 1800000
+
+[widgets.notifications]
+show_badge = true
+auto_dismiss = 5000
+
+[reminders]
+file = "reminders.json"
